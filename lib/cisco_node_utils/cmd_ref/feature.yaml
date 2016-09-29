@@ -67,6 +67,11 @@ pim:
   get_value: '/^feature pim$/' # TBD pim6
   set_value: 'feature pim'
 
+plb:
+  _exclude: [N3k, N8k, N9k]
+  get_value: '/^feature plb$/'
+  set_value: "feature plb"
+
 private_vlan:
   _exclude: [N8k]
   kind: boolean

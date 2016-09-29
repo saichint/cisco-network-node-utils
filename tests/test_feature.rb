@@ -36,6 +36,7 @@ class TestFeature < CiscoTestCase
      'no feature nv overlay',
      'no feature ospf',
      'no feature pim',
+     'no feature plb',
      'no feature private-vlan',
      'no feature tacacs',
      'no feature vn-segment-vlan-based',
@@ -150,6 +151,10 @@ class TestFeature < CiscoTestCase
 
   def test_pim
     feature('pim')
+  end
+
+  def test_plb
+    feature('plb')
   end
 
   def test_private_vlan

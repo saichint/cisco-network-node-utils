@@ -196,6 +196,20 @@ module Cisco
     end
 
     # ---------------------------
+    def self.plb_enable
+      return if plb_enabled?
+      config_set('feature', 'plb')
+    end
+
+    def self.plb_enabled?
+      config_get('feature', 'plb')
+    rescue Cisco::CliError => e
+      # cmd will syntax reject when feature is not enabled.
+      raise unless e.clierror =~ /Syntax error/
+      return false
+    end
+
+    # ---------------------------
     def self.private_vlan_enable
       return if private_vlan_enabled?
       config_set('feature', 'private_vlan')
