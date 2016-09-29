@@ -15,23 +15,23 @@
 # limitations under the License.
 
 require_relative 'node_util'
-require_relative 'plb_device_group'
+require_relative 'itd_device_group'
 
 module Cisco
-  # node_utils class for plb_device_group_node
-  class PlbDeviceGroupNode < PlbDeviceGroup
-    attr_reader :plb_device_group_name, :name, :node_type
+  # node_utils class for itd_device_group_node
+  class ItdDeviceGroupNode < ItdDeviceGroup
+    attr_reader :itd_device_group_name, :name, :node_type
 
-    def initialize(plb_dg_name, node_name, node_type, instantiate=true)
-      fail TypeError unless plb_dg_name.is_a?(String)
+    def initialize(itd_dg_name, node_name, node_type, instantiate=true)
+      fail TypeError unless itd_dg_name.is_a?(String)
       fail TypeError unless node_name.is_a?(String)
-      fail ArgumentError unless plb_dg_name.length > 0
+      fail ArgumentError unless itd_dg_name.length > 0
       fail ArgumentError unless node_name.length > 0
 
-      @plb_device_group_name = plb_dg_name
-      @plbdg = PlbDeviceGroup.plbs[plb_dg_name]
-      fail "plb device-group #{plb_dg_name} does not exist" if
-      @plbdg.nil?
+      @itd_device_group_name = itd_dg_name
+      @itddg = ItdDeviceGroup.itds[itd_dg_name]
+      fail "itd device-group #{itd_dg_name} does not exist" if
+      @itddg.nil?
       @name = node_name
       @node_type = node_type
 
@@ -39,29 +39,29 @@ module Cisco
       create_node if instantiate
     end
 
-    # plb_device_group_nodes have the name form as
+    # itd_device_group_nodes have the name form as
     # node ip 1.1.1.1
     # node IPv6 2000::1
     # and they depdend on the device_group
-    def self.plb_nodes(node_name=nil)
+    def self.itd_nodes(node_name=nil)
       fail TypeError unless node_name.is_a?(String) || node_name.nil?
-      plb_nodes = {}
-      plb_list = PlbDeviceGroup.plbs
-      return plb_nodes if plb_list.nil?
-      plb_list.keys.each do |name|
-        plb_nodes[name] = {}
-        match = config_get('plb_device_group',
-                           'all_plb_device_group_nodes', name: name)
+      itd_nodes = {}
+      itd_list = ItdDeviceGroup.itds
+      return itd_nodes if itd_list.nil?
+      itd_list.keys.each do |name|
+        itd_nodes[name] = {}
+        match = config_get('itd_device_group',
+                           'all_itd_device_group_nodes', name: name)
         next if match.nil?
         match.each do |vars|
           ntype = vars[0]
           nname = vars[1].strip
           next unless node_name.nil? || nname == node_name
-          plb_nodes[name][nname] =
-              PlbDeviceGroupNode.new(name, nname, ntype, false)
+          itd_nodes[name][nname] =
+              ItdDeviceGroupNode.new(name, nname, ntype, false)
         end
       end
-      plb_nodes
+      itd_nodes
     end
 
     ########################################################
@@ -69,53 +69,53 @@ module Cisco
     ########################################################
 
     def ==(other)
-      (plb_device_group_name == other.plb_device_group_name) &&
+      (itd_device_group_name == other.itd_device_group_name) &&
         (name == other.name) && (node_type == other.node_type)
     end
 
     def create_node
-      config_set('plb_device_group', 'create_node',
-                 name: @plbdg.name, ntype: @node_type, nname: @name)
+      config_set('itd_device_group', 'create_node',
+                 name: @itddg.name, ntype: @node_type, nname: @name)
     end
 
     def destroy
-      config_set('plb_device_group', 'destroy_node', name: @plbdg.name,
+      config_set('itd_device_group', 'destroy_node', name: @itddg.name,
                 ntype: @node_type, nname: @name)
     end
 
     # Helper method to delete @set_args hash keys
     def set_args_keys_default
-      @set_args = { name: @plbdg.name }
+      @set_args = { name: @itddg.name }
       @set_args[:ntype] = @node_type
       @set_args[:nname] = @name
       @get_args = @set_args
     end
 
     def hot_standby
-      config_get('plb_device_group', 'hot_standby', @get_args)
+      config_get('itd_device_group', 'hot_standby', @get_args)
     end
 
     # DO NOT call this directly
     def lhot_standby=(state)
       no_cmd = (state ? '' : 'no')
       @set_args[:state] = no_cmd
-      config_set('plb_device_group', 'hot_standby', @set_args)
+      config_set('itd_device_group', 'hot_standby', @set_args)
       set_args_keys_default
     end
 
     def default_hot_standby
-      config_get_default('plb_device_group', 'hot_standby')
+      config_get_default('itd_device_group', 'hot_standby')
     end
 
     def weight
-      config_get('plb_device_group', 'weight', @get_args)
+      config_get('itd_device_group', 'weight', @get_args)
     end
 
     # DO NOT call this directly
     def lweight=(val)
       @set_args[:state] = val == default_weight ? 'no' : ''
       @set_args[:weight] = val
-      config_set('plb_device_group', 'weight', @set_args)
+      config_set('itd_device_group', 'weight', @set_args)
     end
 
     # Call this for setting hot_standby and weight together because
@@ -138,7 +138,7 @@ module Cisco
     end
 
     def default_weight
-      config_get_default('plb_device_group', 'weight')
+      config_get_default('itd_device_group', 'weight')
     end
   end  # Class
 end    # Module
