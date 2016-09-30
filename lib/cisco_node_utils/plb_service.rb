@@ -193,10 +193,9 @@ module Cisco
     def ingress_interface
       list = config_get('plb_service', 'ingress_interface', @get_args)
       list.each do |intf, _next_hop|
-        intf.gsub!('Eth', 'ethernet ')
-        intf.gsub!('Po', 'port-channel ')
-        intf.gsub!('Vlan', 'vlan ')
-        intf.gsub!('Bdi', 'bdi ')
+        intf.downcase!
+        intf.gsub!('eth', 'ethernet')
+        intf.gsub!('po', 'port-channel')
       end
       list
     end
@@ -438,35 +437,6 @@ module Cisco
 
     def default_peer_local
       config_get_default('plb_service', 'peer_local')
-    end
-
-    # peer_vdc is an array of vdc and service
-    def peer_vdc
-      config_get('plb_service', 'peer_vdc', @get_args)
-    end
-
-    # peer_vdc is an array of vdc and service
-    # only one peer_vdc is allowed per service
-    # ex: ['switch', 'myservice']
-    def peer_vdc=(parray)
-      if parray.empty?
-        @set_args[:state] = 'no'
-        current_peer_vdc = peer_vdc
-        @set_args[:vdc] = current_peer_vdc[0]
-        @set_args[:service] = current_peer_vdc[1]
-        config_set('plb_service', 'peer_vdc', @set_args) unless
-        current_peer_vdc[0].nil? || current_peer_vdc[1].nil?
-      else
-        @set_args[:state] = ''
-        @set_args[:vdc] = parray[0]
-        @set_args[:service] = parray[1]
-        config_set('plb_service', 'peer_vdc', @set_args)
-      end
-      set_args_keys_default
-    end
-
-    def default_peer_vdc
-      config_get_default('plb_service', 'peer_vdc')
     end
 
     # show command shows nothing when the service is

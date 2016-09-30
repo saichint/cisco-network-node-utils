@@ -93,13 +93,12 @@ class TestPlbSvc < CiscoTestCase
     config 'interface port-channel 100 ; no switchport'
     config 'interface bdi 3'
     plb = PlbService.new('new_group')
-    intf = interfaces[0].dup
     new_intf = Interface.new(interfaces[0])
     new_intf.switchport_mode = :disabled
-    ii = [['vlan 2', '1.1.1.1'],
-          [intf.insert(8, ' '), '2.2.2.2'],
-          ['bdi 3', '3.3.3.3'],
-          ['port-channel 100', '4.4.4.4']]
+    ii = [['vlan2', '1.1.1.1'],
+          [interfaces[0], '2.2.2.2'],
+          ['bdi3', '3.3.3.3'],
+          ['port-channel100', '4.4.4.4']]
     plb.ingress_interface = ii
     assert_equal(plb.ingress_interface, ii)
     plb.ingress_interface = plb.default_ingress_interface
@@ -241,23 +240,6 @@ class TestPlbSvc < CiscoTestCase
     plb.shutdown = plb.default_shutdown
     assert_equal(plb.default_shutdown,
                  plb.shutdown)
-  end
-
-  def test_peer_vdc
-    plb = PlbService.new('new_group')
-    parray = %w(vdc1 ser1)
-    if validate_property_excluded?('plb_service', 'peer_vdc')
-      assert_nil(plb.peer_vdc)
-      assert_raises(Cisco::UnsupportedError) do
-        plb.peer_vdc = parray
-      end
-      return
-    end
-    plb.peer_vdc = parray
-    assert_equal(parray, plb.peer_vdc)
-    plb.peer_vdc = plb.default_peer_vdc
-    assert_equal(plb.default_peer_vdc,
-                 plb.peer_vdc)
   end
 
   def test_peer_local
