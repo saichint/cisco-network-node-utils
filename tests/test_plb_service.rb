@@ -88,16 +88,12 @@ class TestPlbSvc < CiscoTestCase
     config 'feature interface-vlan'
     config 'vlan 2'
     config 'interface vlan 2'
-    config 'system bridge-domain 3'
-    config 'bridge-domain 3'
     config 'interface port-channel 100 ; no switchport'
-    config 'interface bdi 3'
     plb = PlbService.new('new_group')
     new_intf = Interface.new(interfaces[0])
     new_intf.switchport_mode = :disabled
     ii = [['vlan2', '1.1.1.1'],
           [interfaces[0], '2.2.2.2'],
-          ['bdi3', '3.3.3.3'],
           ['port-channel100', '4.4.4.4']]
     plb.ingress_interface = ii
     assert_equal(plb.ingress_interface, ii)
@@ -106,9 +102,6 @@ class TestPlbSvc < CiscoTestCase
     config 'no interface port-channel 100'
     config 'no interface vlan 2'
     config 'no vlan 2'
-    config 'no interface bdi 3'
-    config 'no bridge-domain 3'
-    config 'no system bridge-domain 3'
     config 'no feature interface-vlan'
   end
 

@@ -92,10 +92,6 @@ module Cisco
     # Ex: 'Reset Requested by CLI command reload'
     def self.reset_reason
       config_get('show_version', 'last_reset_reason')
-    rescue RuntimeError => e
-      # Some Nexus platforms may fail to report this value.
-      return nil if /No key/ =~ e.message
-      raise
     end
 
     # Returns chassis hash with keys "descr", "pid", "vid", "sn"
