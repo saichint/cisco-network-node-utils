@@ -168,13 +168,13 @@ route_reflector_client:
   default_value: false
 
 send_community:
+  multiple:
   auto_default: false
   default_value: 'none'
   nexus:
     get_value: '/^send-community(?: .*)?/'
     set_value: '<state> send-community <attr>'
   ios_xr:
-    multiple:
     # XR three seperate commands: send-community-ebgp  send-community-gshut-ebgp
     # and send-extended-community-ebgp
     # send-community-ebgp' and 'send-extended-community-ebgp' are the equivalents
@@ -189,7 +189,7 @@ soft_reconfiguration_in:
     get_value: '/^soft-reconfiguration inbound(?: always)?/'
     set_value: '<state> soft-reconfiguration inbound <always>'
   N3k: *soft_recon_always
-  N8k: *soft_recon_always
+  N9k-F: *soft_recon_always
   N9k: *soft_recon_always
   else:
     get_value: '/^soft-reconfiguration inbound/'

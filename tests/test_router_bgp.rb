@@ -61,9 +61,11 @@ def setup_vrf
 end
 
 def newer_image_version?
-  return false if Utils.image_version?(/7.0.3.I2|I3|I4/) ||
-                  Utils.chassis_pid?(/N(5|6|7|8)/)
-  true
+  new = true
+  new = false if Utils.image_version?(/7.0.3.I2|I3|I4/) ||
+                 node.product_id[/(N5|N6|N7|N9.*-F)/]
+  new = true if Utils.image_version?(/8.0/)
+  new
 end
 
 # TestRouterBgp - Minitest for RouterBgp class
@@ -588,10 +590,10 @@ class TestRouterBgp < CiscoTestCase
 
   def test_event_history_cli
     bgp = setup_default
-    if validate_property_excluded?('bgp', 'event_history_detail')
-      assert_nil(bgp.event_history_detail)
+    if validate_property_excluded?('bgp', 'event_history_cli')
+      assert_nil(bgp.event_history_cli)
       assert_raises(Cisco::UnsupportedError) do
-        bgp.event_history_detail = 'true'
+        bgp.event_history_cli = 'true'
       end
       return
     end
@@ -607,11 +609,13 @@ class TestRouterBgp < CiscoTestCase
     bgp.event_history_cli = 'size_medium'
     assert_equal('size_medium', bgp.event_history_cli)
     bgp.event_history_cli = 'size_disable'
-    assert_equal('size_disable', bgp.event_history_cli)
     if newer_image_version?
-      bgp.event_history_cli = '100000'
-      assert_equal('100000', bgp.event_history_cli)
+      assert_equal('false', bgp.event_history_cli)
+    else
+      assert_equal('size_disable', bgp.event_history_cli)
     end
+    bgp.event_history_cli = '100000'
+    assert_equal('100000', bgp.event_history_cli)
     bgp.event_history_cli = bgp.default_event_history_cli
     assert_equal(bgp.default_event_history_cli, bgp.event_history_cli)
   end
@@ -627,7 +631,7 @@ class TestRouterBgp < CiscoTestCase
     end
     assert_equal(bgp.default_event_history_detail, bgp.event_history_detail)
     bgp.event_history_detail = 'true'
-    assert_equal(bgp.default_event_history_detail, bgp.event_history_detail)
+    assert_equal('true', bgp.event_history_detail)
     bgp.event_history_detail = 'false'
     assert_equal(bgp.default_event_history_detail, bgp.event_history_detail)
     bgp.event_history_detail = 'size_small'
@@ -637,13 +641,45 @@ class TestRouterBgp < CiscoTestCase
     bgp.event_history_detail = 'size_medium'
     assert_equal('size_medium', bgp.event_history_detail)
     bgp.event_history_detail = 'size_disable'
-    assert_equal('size_disable', bgp.event_history_detail)
     if newer_image_version?
-      bgp.event_history_detail = '100000'
-      assert_equal('100000', bgp.event_history_detail)
+      assert_equal('false', bgp.event_history_detail)
+    else
+      assert_equal('size_disable', bgp.event_history_detail)
     end
+    bgp.event_history_detail = '100000'
+    assert_equal('100000', bgp.event_history_detail)
     bgp.event_history_detail = bgp.default_event_history_detail
     assert_equal(bgp.default_event_history_detail, bgp.event_history_detail)
+  end
+
+  def test_event_history_errors
+    bgp = setup_default
+    if validate_property_excluded?('bgp', 'event_history_errors')
+      assert_nil(bgp.event_history_errors)
+      assert_raises(Cisco::UnsupportedError) do
+        bgp.event_history_errors = 'true'
+      end
+      return
+    end
+    skip('platform not supported for this test') unless newer_image_version?
+    assert_equal(bgp.default_event_history_errors, bgp.event_history_errors)
+    bgp.event_history_errors = 'true'
+    assert_equal(bgp.default_event_history_errors, bgp.event_history_errors)
+    bgp.event_history_errors = 'false'
+    assert_equal('false', bgp.event_history_errors)
+    bgp.event_history_errors = 'size_small'
+    assert_equal('size_small', bgp.event_history_errors) unless
+      Utils.image_version?(/8.0/)
+    bgp.event_history_errors = 'size_large'
+    assert_equal('size_large', bgp.event_history_errors)
+    bgp.event_history_errors = 'size_medium'
+    assert_equal('size_medium', bgp.event_history_errors)
+    bgp.event_history_errors = 'size_disable'
+    assert_equal('false', bgp.event_history_errors)
+    bgp.event_history_errors = '100000'
+    assert_equal('100000', bgp.event_history_errors)
+    bgp.event_history_errors = bgp.default_event_history_errors
+    assert_equal(bgp.default_event_history_errors, bgp.event_history_errors)
   end
 
   def test_event_history_events
@@ -659,7 +695,7 @@ class TestRouterBgp < CiscoTestCase
     bgp.event_history_events = 'true'
     assert_equal(bgp.default_event_history_events, bgp.event_history_events)
     bgp.event_history_events = 'false'
-    assert_equal('size_disable', bgp.event_history_events)
+    assert_equal('false', bgp.event_history_events)
     bgp.event_history_events = 'size_small'
     assert_equal('size_small', bgp.event_history_events)
     bgp.event_history_events = 'size_large'
@@ -667,13 +703,44 @@ class TestRouterBgp < CiscoTestCase
     bgp.event_history_events = 'size_medium'
     assert_equal('size_medium', bgp.event_history_events)
     bgp.event_history_events = 'size_disable'
-    assert_equal('size_disable', bgp.event_history_events)
     if newer_image_version?
-      bgp.event_history_events = '100000'
-      assert_equal('100000', bgp.event_history_events)
+      assert_equal('false', bgp.event_history_events)
+    else
+      assert_equal('size_disable', bgp.event_history_events)
     end
+    bgp.event_history_events = '100000'
+    assert_equal('100000', bgp.event_history_events)
     bgp.event_history_events = bgp.default_event_history_events
     assert_equal(bgp.default_event_history_events, bgp.event_history_events)
+  end
+
+  def test_event_history_objstore
+    bgp = setup_default
+    if validate_property_excluded?('bgp', 'event_history_objstore')
+      assert_nil(bgp.event_history_objstore)
+      assert_raises(Cisco::UnsupportedError) do
+        bgp.event_history_objstore = 'true'
+      end
+      return
+    end
+    skip('platform not supported for this test') unless newer_image_version?
+    assert_equal(bgp.default_event_history_objstore, bgp.event_history_objstore)
+    bgp.event_history_objstore = 'true'
+    assert_equal('true', bgp.event_history_objstore)
+    bgp.event_history_objstore = 'false'
+    assert_equal(bgp.default_event_history_objstore, bgp.event_history_objstore)
+    bgp.event_history_objstore = 'size_small'
+    assert_equal('size_small', bgp.event_history_objstore)
+    bgp.event_history_objstore = 'size_large'
+    assert_equal('size_large', bgp.event_history_objstore)
+    bgp.event_history_objstore = 'size_medium'
+    assert_equal('size_medium', bgp.event_history_objstore)
+    bgp.event_history_objstore = 'size_disable'
+    assert_equal('false', bgp.event_history_objstore)
+    bgp.event_history_objstore = '100000'
+    assert_equal('100000', bgp.event_history_objstore)
+    bgp.event_history_objstore = bgp.default_event_history_objstore
+    assert_equal(bgp.default_event_history_objstore, bgp.event_history_objstore)
   end
 
   def test_event_history_periodic
@@ -688,20 +755,27 @@ class TestRouterBgp < CiscoTestCase
     assert_equal(bgp.default_event_history_periodic,
                  bgp.event_history_periodic)
     bgp.event_history_periodic = 'false'
-    assert_equal('false', bgp.event_history_periodic)
+    assert_equal('false', bgp.event_history_periodic) unless
+      Utils.image_version?(/8.0/)
     bgp.event_history_periodic = 'size_small'
     assert_equal('size_small', bgp.event_history_periodic)
     bgp.event_history_periodic = 'size_large'
     assert_equal('size_large', bgp.event_history_periodic)
     bgp.event_history_periodic = 'size_medium'
     assert_equal('size_medium', bgp.event_history_periodic)
+    bgp.event_history_periodic = '100000'
+    assert_equal('100000', bgp.event_history_periodic)
     bgp.event_history_periodic = 'size_disable'
-    assert_equal('size_disable', bgp.event_history_periodic)
+    if newer_image_version?
+      assert_equal(bgp.default_event_history_periodic,
+                   bgp.event_history_periodic)
+    else
+      assert_equal('size_disable', bgp.event_history_periodic)
+    end
     bgp.event_history_periodic = 'true'
     if newer_image_version?
-      assert_equal('true', bgp.event_history_periodic)
-      bgp.event_history_periodic = '100000'
-      assert_equal('100000', bgp.event_history_periodic)
+      assert_equal('true', bgp.event_history_periodic) unless
+        Utils.image_version?(/8.0/)
     else
       assert_equal(bgp.default_event_history_periodic,
                    bgp.event_history_periodic)
