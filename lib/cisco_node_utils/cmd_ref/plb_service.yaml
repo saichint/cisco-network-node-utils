@@ -1,6 +1,6 @@
 # plb_service
 ---
-_exclude: [N3k, N9k-F, ios_xr]
+_exclude: [N3k, N5k, N6k, N9k-F, ios_xr]
 
 _template:
   get_command: "show running-config all | section plb"
